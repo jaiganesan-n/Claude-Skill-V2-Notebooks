@@ -19,6 +19,12 @@ description: Edit an existing Jupyter notebook -- make changes, test execution, 
 
 **Make minimal, focused changes** unless the user explicitly requests broader modifications. Change only what is needed to fulfill the user's request. Don't refactor surrounding code, add features, or restructure the notebook beyond what was asked for.
 
+**Never alter the core flow, pipeline, or idea of the notebook** during updates, edits, or testing — unless the user explicitly instructs you to do so. This means:
+- The sequence of steps the notebook teaches must remain intact
+- The central concept or technique being demonstrated must not change
+- The overall pipeline architecture (e.g., ingest → chunk → embed → retrieve → generate) must be preserved
+- If an update would require changing the core flow to work correctly, **stop and ask the user** rather than proceeding silently
+
 ---
 
 ## Workflow

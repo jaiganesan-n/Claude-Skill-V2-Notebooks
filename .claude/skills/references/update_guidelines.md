@@ -163,6 +163,17 @@ Apply only what is necessary to fulfill the update request. Do not:
 
 More changes = more risk of introducing new issues. Targeted updates are better updates.
 
+### Core Flow / Pipeline / Idea — Hard Constraint
+
+**Do not change the core flow, pipeline, or central idea of the notebook** during any update or test cycle — unless the user explicitly tells you to.
+
+This constraint applies even when:
+- A content check (C1–C6) flags the approach as outdated
+- A dependency or API update could be done more cleanly with a different pattern
+- Testing reveals an error that could be fixed by restructuring the pipeline
+
+If preserving the core flow conflicts with making a required fix, **flag it to the user** and wait for explicit instruction before changing the flow. Document this in the "Items Skipped" section of the update report with reason: "core flow preserved — user instruction required to change".
+
 ---
 
 ## Post-Edit Verification

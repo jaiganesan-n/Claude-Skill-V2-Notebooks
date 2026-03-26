@@ -21,7 +21,7 @@ These skills are installed at the **project/workspace level** (not user level) u
 From the root of your target project:
 
 ```bash
-npx openskills install towardsai/notebook-skills
+npx openskills install jaiganesan-n/Claude-Skill-V2-Notebooks
 ```
 
 This installs the skills into `.claude/skills/` in your project directory. They are immediately available in Claude Code — no restart needed.

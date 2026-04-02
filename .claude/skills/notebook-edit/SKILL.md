@@ -32,34 +32,16 @@ description: Edit an existing Jupyter notebook -- make changes, test execution, 
 ### 0. Load Update Context
 
 Before making any changes, read:
-- [`../references/update_guidelines.md`](../references/update_guidelines.md) — pre-edit checklist, content checks, and the update report template
+- [`../references/update_guidelines.md`](../references/update_guidelines.md) — general update guidelines (G1–G5), pre-edit checklist (P1–P6), content checks (C1–C6), must-do guidelines (M1), and the update report template
 - [`../references/course_syllabus.md`](../references/course_syllabus.md) — identifies the chapter, which determines which Content & Concept Checks apply
 - [`../references/course_intro.md`](../references/course_intro.md) — confirms default model, expected tech stack, and course philosophy
+
+Work through **all sections** of `update_guidelines.md` in order: General Update Guidelines (G1–G5) first, then Pre-Edit Checks (P1–P6), then Content & Concept Checks. Complete Must-Do Guidelines (M1) after the edit. Document all findings in the update report.
 
 **Per-notebook instructions take precedence over all defaults.**
 If the user has provided targeted instructions for this specific edit (e.g. "only update the API pattern, don't touch anything else", "switch this notebook to use LangChain instead of LlamaIndex", "ignore P3 — dependency versions are pinned intentionally"), follow those instructions. They override the general defaults in course_intro.md and the default scope of update_guidelines.md.
 
 Do not silently skip a check that the user has explicitly told you to skip — instead, note it in the "Items Skipped" section of the update report with the reason: "user instruction".
-
-Work through the pre-edit checklist from `update_guidelines.md` for all checks that are NOT excluded by per-notebook instructions. Document all findings. Include the complete update report in your final response using the Update Report Template from `update_guidelines.md`.
-
-**Web search for latest implementation patterns.** Before making edits, search for any recent changes to the major libraries used in the notebook (e.g. `anthropic`, `langchain`, `llama-index`, `openai`, `gradio`, `transformers`). Look for:
-- Deprecated methods or changed import paths since the notebook was last updated
-- New recommended patterns for SDK initialization, API calls, or tool use
-- Current stable version numbers for the packages being installed
-
-Document what you find. If the search reveals a breaking change or a clearly better pattern, apply it as part of the edit. If it would change the core flow, flag it to the user first.
-
-**Notebook readability check.** Before making code changes, read the first few cells of the notebook. Verify the notebook opens with a clear purpose header — it should include:
-- A title cell stating what the notebook is about
-- What the notebook covers (the concepts or techniques demonstrated)
-- Learning objectives (what the learner will be able to do after completing it)
-- Prerequisites (what prior knowledge is assumed)
-- A "What's New" or targeted update notes section if this is an updated version
-
-If any of these are missing or vague, add or improve them as part of the edit — this counts as a P6-level fix and should be noted in the update report under Changes Made.
-
-**Read `update_log.json` before editing.** Check if `$PROJECT_DIR/update_log.json` exists. If it does, read it and review which targeted additions have already been logged for other notebooks. Use this to avoid introducing the same specific addition (e.g. a widget, an optional pipeline cell, a new section) into multiple notebooks redundantly. The log only tracks targeted/specific additions — general updates (dep versions, model names, API patterns, typo fixes) are never logged there.
 
 ### 1. Setup
 

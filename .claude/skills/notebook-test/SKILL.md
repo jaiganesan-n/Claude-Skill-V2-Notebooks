@@ -62,7 +62,28 @@ uv pip install --python venv_notebook $(cat requirements.txt) 2>&1 | tee install
 
 If installation fails, note the dependency conflicts for the error report.
 
-### 3.5. Remove Colab-Specific Code
+### 3.5. Check for Dependency Conflicts
+
+After installation, explicitly verify no conflicts exist that could affect pipeline execution:
+
+```bash
+venv_notebook/bin/python -m pip check 2>&1 | tee conflict_log.txt
+cat conflict_log.txt
+```
+
+If conflicts are reported:
+- Note each conflict in the error report, identifying which pipeline step it may affect
+- Tag the error as a P3 (Dependency Versions) issue for `notebook-edit` to resolve
+- Do **not** attempt to fix conflicts here — report only
+
+Also check for outdated packages that could cause runtime issues:
+
+```bash
+venv_notebook/bin/python -m pip list --outdated --format=columns 2>/dev/null | tee outdated_packages.txt
+cat outdated_packages.txt
+```
+
+### 3.6. Remove Colab-Specific Code
 
 Before executing, read the `.py` file and use the Edit tool to remove any Colab-specific lines (see the shared workflow's "Colab-Specific Code" section for the full list of patterns). Keep track of what you removed so you can mention it in the final report.
 
@@ -90,13 +111,18 @@ When categorizing errors, cross-reference against [`../references/update_guideli
 
 For category (b) errors, name the specific check (e.g., "P1 — Model Names") in your report so the `notebook-edit` skill knows exactly where to focus.
 
+**Always show the complete error list to the user** — do not truncate or summarize away details. The user (author) reviews the full list and provides comments/direction. After the user responds, use `notebook-edit` to apply the fixes based on their instructions.
+
 #### If execution succeeds:
 
-Report that the notebook executed successfully. Include any relevant output summaries.
+Report that the notebook executed successfully. Include:
+- Any relevant output summaries (model responses, retrieved chunks, scores, etc.)
+- Dependency conflict warnings from step 3.5 (if any) — these should be addressed even when execution succeeds
+- Outdated packages that could cause future issues (flagged as P3)
 
 #### If execution fails:
 
-Provide a structured error report with:
+Provide a **complete, structured error report** — list all errors found, not just the first one. Show the full report to the user before doing anything else:
 
 1. **Error message**: The exact error and traceback from the execution log
 2. **Location**: Which cell/section of the notebook failed (identify the relevant code)
@@ -105,13 +131,16 @@ Provide a structured error report with:
    - API key not set or expired
    - Network-dependent code failing offline
    - Hardcoded paths or environment-specific assumptions
-   - Breaking changes in upstream libraries
+   - Breaking changes in upstream libraries (search for the library's changelog if uncertain)
    - Data files or resources not available
 4. **Suggested fixes**: Concrete steps to resolve each possible cause, e.g.:
    - "Add `package==X.Y.Z` to the `!pip install` cell"
    - "Set the `GOOGLE_API_KEY` environment variable before running"
    - "Update the import from `old_module` to `new_module` (changed in v2.0)"
    - "Replace the hardcoded path with a relative path or URL"
+5. **Update check code**: Tag each error with its P-code (e.g., `P1`, `P2`, `P3`) so `notebook-edit` knows exactly which check to address
+
+After delivering the report, **wait for the user's comments** before proceeding. The user may re-prioritize errors, add context, or direct you to run `notebook-edit` with specific instructions.
 
 ### 6. Cleanup
 
@@ -138,7 +167,12 @@ grep -E "^# !pip install" <notebook_name>.py | sed 's/^# !pip install //' > requ
 uv venv venv_notebook
 uv pip install --python venv_notebook $(cat requirements.txt) 2>&1 | tee install_log.txt
 
-# 3.5. Remove Colab-specific lines from <notebook_name>.py using the Edit tool
+# 3.5. Check for dependency conflicts and outdated packages
+venv_notebook/bin/python -m pip check 2>&1 | tee conflict_log.txt
+venv_notebook/bin/python -m pip list --outdated --format=columns 2>/dev/null | tee outdated_packages.txt
+#      Note all conflicts (P3) — do NOT fix them, report only
+
+# 3.6. Remove Colab-specific lines from <notebook_name>.py using the Edit tool
 #      (IPython kernel shutdown, drive.mount, files.upload, etc. — see shared workflow)
 #      Note removed lines for inclusion in the final report.
 
@@ -146,8 +180,9 @@ uv pip install --python venv_notebook $(cat requirements.txt) 2>&1 | tee install
 if [ -f "$PROJECT_DIR/.env" ]; then export $(grep -v '^#' "$PROJECT_DIR/.env" | xargs); fi
 uv run --python venv_notebook/bin/python <notebook_name>.py 2>&1 | tee execution_log.txt
 
-# 5. Report results (success or structured error report — do NOT fix errors)
-#    If Colab-specific lines were removed, mention them in the report.
+# 5. Show COMPLETE error report to user — all errors, not just first — then WAIT for author comments
+#    Tag each error with P-code (P1-P5). Include conflict_log.txt findings even on success.
+#    After user reviews and comments → use notebook-edit to apply fixes.
 
 # 6. Cleanup
 cd "$PROJECT_DIR" && rm -rf "$TEMP_DIR"

@@ -87,13 +87,39 @@ For each outdated package:
 3. After resolving, re-run the full dependency validation workflow from the shared workflow to confirm pinned versions are consistent.
 4. Update the `!pip install` line in the `.py` file with the final validated versions.
 
+**Anti-Loop Rule:** Make at most **2 resolution attempts** per package conflict. If a compatible version cannot be found after two tries, document the conflict under P3 in the update report and move on — do not keep iterating. Staying stuck on a version conflict blocks the rest of the pipeline.
+
 Document every version change (or decision not to change) in the update report under P3.
+
+### 3.6. Browse for Latest Documentation
+
+Before making any code edits, **perform a mandatory web search** for the major libraries used in this notebook. Search for:
+
+- Current stable version and any breaking changes since the notebook was written
+- Updated SDK initialization patterns, method signatures, or import paths
+- Deprecated methods or classes that need replacement
+- New recommended patterns for the same functionality
+
+Search terms to use (adapt to the notebook's stack):
+- `"<library> changelog latest"` — e.g. `"llama-index changelog 0.11"` or `"anthropic python sdk v1 migration"`
+- `"<library> deprecated <method>"` — to find replaced APIs
+- `"<library> <feature> example 2025"` — for current usage patterns
+
+**Do not skip this step, even for minor edits.** Documentation findings must be recorded under G1 in the update report, even if no changes are needed.
 
 ### 4. Make Edits
 
 Edit the `.py` file to implement the user's requested changes. Keep changes minimal and focused.
 
 **Always fix grammar and typos** in user-facing strings within code cells (e.g. print messages, prompts, LLM instructions, comments shown to users). Do this alongside the requested changes — no need for the user to ask separately.
+
+**Apply documentation findings:** Any deprecated API, changed import path, or recommended pattern update found in step 3.6 must be applied here — even if it wasn't in the user's original request. These are required for the notebook to work correctly.
+
+**Add Optional Code Section at End:** After completing required changes, add a clearly marked optional section at the end of the notebook with additional implementations, extended examples, or advanced usage of the core technique. Guidelines:
+- Open the section with a `# %% [markdown]` cell titled `## Optional: <Description>`
+- Use `ipywidgets` where it genuinely improves the experience — interactive sliders, dropdowns, text inputs, or progress bars make optional sections more engaging. Only add widgets if they add real value; don't add them for the sake of it.
+- Include `ipywidgets` in the `!pip install` cell if used (check `colab_libraries.txt` for the compatible version)
+- Each optional block must be self-contained — it should not break the notebook if skipped
 
 If you add or change dependencies:
 - Re-validate using the full dependency validation workflow from the shared workflow
@@ -130,12 +156,12 @@ If errors occur, fix them in the `.py` file and re-test. See the shared workflow
 
 Before converting, restore any Colab-specific lines that were removed in step 5. Use the Edit tool to add them back in their original positions in the `.py` file.
 
-Once restored, determine the versioned output path (never overwrite the original) and convert:
+Once restored, determine the versioned output path (never overwrite the original) and convert. All versioned notebooks are saved to the `notebooks-v/` folder:
 
 ```bash
-# Auto-increment version suffix — start at _v2
-ORIG_DIR="$(dirname "$PROJECT_DIR/notebooks/<notebook_name>.ipynb")"
-BASE="$ORIG_DIR/<notebook_name>"
+# Auto-increment version suffix — start at _v2, save to notebooks-v/
+mkdir -p "$PROJECT_DIR/notebooks-v"
+BASE="$PROJECT_DIR/notebooks-v/<notebook_name>"
 VERSION=2
 OUTPUT="${BASE}_v${VERSION}.ipynb"
 while [ -f "$OUTPUT" ]; do
@@ -221,13 +247,19 @@ uv venv venv_notebook
 uv pip install --python venv_notebook $(cat requirements.txt)
 
 # 3.5. Check for outdated packages (cross-check against colab_libraries.txt before upgrading)
+#      Anti-Loop Rule: max 2 resolution attempts per conflict, then document and move on
 venv_notebook/bin/python -m pip list --outdated --format=columns 2>/dev/null | tee outdated_packages.txt
+
+# 3.6. Browse for latest documentation (MANDATORY — even for minor edits)
+#      Web search: "<library> changelog latest", "<library> deprecated <method>", "<library> <feature> example 2025"
+#      Document findings under G1 in update report
 
 # 4. Make edits to <notebook_name>.py
 #    - Minimal changes + fix grammar/typos in strings
 #    - Add/improve notebook purpose header if missing (title, what it covers, objectives, prerequisites)
 #    - Apply any version bumps resolved in step 3.5
-#    - Apply any API/SDK pattern updates found via web search
+#    - Apply deprecated API / changed import path fixes from step 3.6 web search
+#    - Add Optional section at end: ## Optional: <Description> + ipywidgets where they add value
 
 # 5. If deps changed: re-validate (see shared workflow)
 
@@ -240,7 +272,7 @@ fi
 
 # 7. Remove Colab-specific lines from <notebook_name>.py (Edit tool)
 #    (IPython kernel shutdown, drive.mount, files.upload, etc. — see shared workflow)
-#    Remember removed lines and their positions for restoration in step 9.
+#    Remember removed lines and their positions for restoration in step 10.
 
 # 8. Test
 if [ -f "$PROJECT_DIR/.env" ]; then export $(grep -v '^#' "$PROJECT_DIR/.env" | xargs); fi
@@ -250,9 +282,9 @@ uv run --python venv_notebook/bin/python <notebook_name>.py
 
 # 10. Restore removed Colab-specific lines in <notebook_name>.py (Edit tool)
 
-# 11. Determine versioned output path and convert back to notebook
-ORIG_DIR="$(dirname "$PROJECT_DIR/notebooks/<notebook_name>.ipynb")"
-BASE="$ORIG_DIR/<notebook_name>"; VERSION=2; OUTPUT="${BASE}_v${VERSION}.ipynb"
+# 11. Save to notebooks-v/ with version suffix
+mkdir -p "$PROJECT_DIR/notebooks-v"
+BASE="$PROJECT_DIR/notebooks-v/<notebook_name>"; VERSION=2; OUTPUT="${BASE}_v${VERSION}.ipynb"
 while [ -f "$OUTPUT" ]; do VERSION=$((VERSION+1)); OUTPUT="${BASE}_v${VERSION}.ipynb"; done
 $PROJECT_DIR/.venv_tools/bin/jupytext --to notebook <notebook_name>.py --output "$OUTPUT"
 echo "Saved as: $OUTPUT"

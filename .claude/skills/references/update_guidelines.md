@@ -26,13 +26,20 @@ These run on every edit session before touching any code.
 
 ### G1 — Web Search for Latest Implementation Patterns
 
+**This is a mandatory step — do not skip it, even for minor edits.**
+
 Before making any edits, search for recent changes to the major libraries used in the notebook (e.g. `anthropic`, `langchain`, `llama-index`, `openai`, `gradio`, `transformers`). Look for:
 
 - Deprecated methods or changed import paths since the notebook was last updated
 - New recommended patterns for SDK initialization, API calls, or tool use
 - Current stable version numbers for the packages being installed
 
-Document what you find. If the search reveals a breaking change or a clearly better pattern, apply it as part of the edit. If it would change the core flow, flag it to the user first.
+**Recommended search terms** (adapt to the notebook's stack):
+- `"<library> changelog latest"` — e.g. `"llama-index changelog 0.11"` or `"anthropic python sdk v1 migration"`
+- `"<library> deprecated <method>"` — to find replaced APIs
+- `"<library> <feature> example 2025"` — for current usage patterns
+
+Document what you find under G1 in the update report — even if no changes are needed ("checked — no breaking changes"). If the search reveals a breaking change or a clearly better pattern, apply it as part of the edit. If it would change the core flow, flag it to the user first.
 
 ### G2 — Notebook Readability & Purpose Header
 
@@ -64,6 +71,8 @@ For each outdated package:
 3. After resolving, re-run the full dependency validation workflow (see `NOTEBOOK_WORKFLOW.md`) to confirm pinned versions are consistent.
 4. Update the `!pip install` line in the `.py` file with the final validated versions.
 
+**Anti-Loop Rule:** Make at most **2 resolution attempts** per package conflict. If a compatible version cannot be found after two tries, document the conflict under P3 in the update report and move on — do not keep iterating. Staying stuck on version conflicts blocks the rest of the pipeline.
+
 Document every version change (or decision not to change) in the update report under P3.
 
 ### G4 — .env Verification Before Testing
@@ -88,6 +97,33 @@ If a key is missing:
 Check if `$PROJECT_DIR/update_log.json` exists. If it does, read it and review which targeted additions have already been logged for other notebooks. Use this to avoid introducing the same specific addition (e.g. a widget, an optional pipeline cell, a new section) into multiple notebooks redundantly.
 
 The log only tracks targeted/specific additions. General updates (dep versions, model names, API patterns, typo fixes) are never logged there.
+
+### G6 — Output Folder: `notebooks-v/`
+
+All versioned/updated notebooks are saved to `$PROJECT_DIR/notebooks-v/` (not back into `notebooks/`). This keeps originals and updated versions clearly separated.
+
+- Original notebooks live in `notebooks/`
+- Updated (versioned) notebooks live in `notebooks-v/` with a `_v2`, `_v3`, … suffix
+- Create the folder if it doesn't exist: `mkdir -p "$PROJECT_DIR/notebooks-v"`
+
+### G7 — Optional Code Section and Widgets
+
+Every notebook edit must include an optional code section at the end unless the user explicitly says not to add one.
+
+**What to add:**
+- Additional implementations or variations of the core technique demonstrated in the notebook
+- Extended examples, edge cases, or advanced usage patterns
+- Alternative approaches that compare favorably or unfavorably with the main approach
+
+**Widget usage:**
+- Use `ipywidgets` where it genuinely improves the optional section — interactive sliders, dropdowns, text inputs, or progress bars make optional sections more engaging
+- Only add widgets if they add real interactivity value; don't add them just for decoration
+- If widgets are used, add `ipywidgets` to the `!pip install` cell (check `colab_libraries.txt` for the compatible version)
+
+**Formatting:**
+- Open each optional block with `# %% [markdown]` titled `## Optional: <Description>`
+- Each optional block must be self-contained — it must not break the notebook if skipped
+- Optional code runs after all required pipeline cells are complete
 
 ---
 
@@ -254,11 +290,13 @@ If preserving the core flow conflicts with making a required fix, **flag it to t
 Before converting the `.py` file back to `.ipynb`, confirm:
 
 - [ ] Cell execution order is strictly linear — no cell uses a variable defined in a later cell
-- [ ] G1 — web search completed for major libraries in this notebook
+- [ ] G1 — web search completed for major libraries in this notebook (mandatory, even if no changes)
 - [ ] G2 — notebook purpose header present and complete (title, overview, objectives, prerequisites, What's New if v2+)
-- [ ] G3 — outdated packages checked; versions updated or justified under P3
+- [ ] G3 — outdated packages checked; versions updated or justified under P3 (max 2 attempts per conflict)
 - [ ] G4 — `.env` verified; all required API keys confirmed present
 - [ ] G5 — `update_log.json` read before editing
+- [ ] G6 — versioned output saved to `notebooks-v/` folder
+- [ ] G7 — optional code section added at end; `ipywidgets` used where appropriate
 - [ ] P1 — model names: all flagged names resolved or documented in Items Skipped
 - [ ] P2 — API patterns: deprecated calls updated or documented in Items Skipped
 - [ ] P3 — dependencies: `!pip install` cell complete with pinned versions for every import
@@ -331,9 +369,11 @@ Date: <today>
 General Update Guidelines
 - G1 Web search findings: [what was found / no breaking changes]
 - G2 Readability check: [header elements present / what was added]
-- G3 Package versions: [packages updated / no outdated packages]
+- G3 Package versions: [packages updated / no outdated packages / conflicts hit anti-loop limit]
 - G4 .env verification: [keys confirmed / issues found]
 - G5 update_log.json read: [reviewed / file not found]
+- G6 Output location: [path to saved notebooks-v/ file]
+- G7 Optional section: [what was added / widgets used / skipped with reason]
 
 Pre-Edit Checks
 - P1 Model names: [findings]

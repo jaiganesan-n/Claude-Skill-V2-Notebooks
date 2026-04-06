@@ -100,10 +100,10 @@ The log only tracks targeted/specific additions. General updates (dep versions, 
 
 ### G6 — Output Folder: `notebooks-v/`
 
-All versioned/updated notebooks are saved to `$PROJECT_DIR/notebooks-v/` (not back into `notebooks/`). This keeps originals and updated versions clearly separated.
+**Every notebook that has been edited — whether a versioned update, a direct replacement, or any other modification — must be saved to `$PROJECT_DIR/notebooks-v/`.** Never write output back into `notebooks/` and never overwrite the original.
 
-- Original notebooks live in `notebooks/`
-- Updated (versioned) notebooks live in `notebooks-v/` with a `_v2`, `_v3`, … suffix
+- `notebooks/` — source of truth; original notebooks live here, untouched
+- `notebooks-v/` — all outputs from `notebook-edit` go here, always with a `_v2`, `_v3`, … suffix
 - Create the folder if it doesn't exist: `mkdir -p "$PROJECT_DIR/notebooks-v"`
 
 ### G7 — Optional Code Section and Widgets

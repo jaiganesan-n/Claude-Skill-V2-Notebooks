@@ -156,7 +156,7 @@ If errors occur, fix them in the `.py` file and re-test. See the shared workflow
 
 Before converting, restore any Colab-specific lines that were removed in step 5. Use the Edit tool to add them back in their original positions in the `.py` file.
 
-Once restored, determine the versioned output path (never overwrite the original) and convert. All versioned notebooks are saved to the `notebooks-v/` folder:
+Once restored, convert and save the output. **All edited/updated notebooks — whether a versioned update or a direct replacement — are saved to the `notebooks-v/` folder.** Never write back into `notebooks/` and never overwrite the original.
 
 ```bash
 # Auto-increment version suffix — start at _v2, save to notebooks-v/

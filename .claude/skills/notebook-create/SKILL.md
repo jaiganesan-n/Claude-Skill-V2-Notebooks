@@ -125,7 +125,7 @@ $PROJECT_DIR/.venv_tools/bin/jupytext --to notebook <notebook_name>.py --output 
 echo "Saved as: $OUTPUT"
 ```
 
-> **Folder convention:** New notebooks created by this skill go to `notebooks/`. When those notebooks are later updated by `notebook-edit`, the versioned outputs go to `notebooks-v/`. Never save new notebooks directly into `notebooks-v/`.
+> **Folder convention:** New notebooks created by this skill go to `notebooks/`. When those notebooks are later edited by `notebook-edit` — whether updated, replaced, or versioned — the output always goes to `notebooks-v/`. Never save new notebooks directly into `notebooks-v/`, and never write `notebook-edit` output back into `notebooks/`.
 
 If the user specifies a different output path or filename, use that instead.
 
